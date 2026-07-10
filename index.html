@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Undertale Dialogue Box</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000000;
+      color: #ffffff;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Press Start 2P', monospace;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .dialog-box {
+      width: 90%;
+      max-width: 650px;
+      min-height: 160px;
+      background-color: #000000;
+      border: 6px solid #ffffff;
+      padding: 30px;
+      position: relative;
+      image-rendering: pixelated;
+    }
+    .dialog-text {
+      font-size: 16px;
+      line-height: 1.8;
+      letter-spacing: 2px;
+      word-break: break-word;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+    .asterisk {
+      color: #ffffff;
+      margin-right: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dialog-box" id="dialog-box">
+    <p class="dialog-text"><span class="asterisk">*</span><span id="text-container"></span></p>
+  </div>
+
+  <script>
+    const dialogues = [
+      "(Dialogo de relleno para que el codigo no se rompa)",
+      "Hola.",
+      "Hay alguien ahi...?",
+      "Bueno... Solo llamo para decir algo",
+      "Algo que a lo mejor debi haberte dicho hace mucho tiempo.",
+      "Recuerdo que la ultima vez que nos vimos lo ultimo que te dije fue un adios. tu te fuiste a la izquierda y yo me fui a la derecha.",
+      "Nunca tube el valor de decirte nada.",
+      "Tenia tantas ganas de gritarte ''Te amo, porfavor quedate a mi lado y seamos felices''",
+      "Pero ya es demasiado tarde para eso, y aun que lo sea, no puedo simplemente quedarme callado, mi corazon me esta pidiendo a gritos que te diga lo que realmente siento por ti.",
+      "Asi que... Lo dire.",
+      "Lo Dire Absolutamente todo.",
+      "Yo.. Te amo, Te amo demasiado, ya no puedo vivir sin ti.",
+      "Hemos pasado por tantas cosas juntos, momentos buenos, momentos malos, momentos super felices.",
+      "Lo di, y aun quiero darlo todo por ti.",
+      "Que cumplamos lo que alguna vez nos propusimos, tener una familia, una casa bonita, casarnos...",
+      "Todo eso y mas lo quiero contigo, para mi, tu eres una princesa, una princesa que debe tener a su principe.",
+      "Y ese principe quiero ser yo, yo quiero cuidarte y protegerte de todo.",
+      "Ver tu sonrisa, me alegraba tanto...me hacia darme cuenta de que tenia un proposito muy importante.",
+      "Me hacia darme cuenta que debia cuidarte y protegerte a toda costa, para que nunca perdieras ese brillo en tus ojos.",
+      "Fuiste la luz en la oscuridad para mi, me guiaste y me guiaste, atra vez de las noches mas oscuras.",
+      "Fuiste el cielo estrellado mas lindo y brillante de todos el cual siempre me ilumino el camino.",
+      "me duele pensar lo tonto que fui al no decirte ''te amo y no te dejare ir''",
+      "Me sacaste de un vacio inmenso del cual pensaba que no habia escapatoria.",
+      "Tu siempre sabias como hacerme sonreir, hacerme reir.",
+      "Tu tenias el carisma que nadie mas tubo.",
+      "Tu me dabas el amor y el cariño que nadie mas me dio nunca.",
+      "Yo estaba dispuesto a dejarlo absolutamente todo atras con tal de estar contigo.",
+      "Porque eras, y aun lo eres todo para mi.",
+      "Ya no sere un cobarde, ya no pienso dejarme vencer por mis mismas dudas.",
+      "Te amo y te quiero para mi, para mi y nadie mas, no te dejare ir nunca.",
+      "Despues de todo este tiempo, porfin estoy decidido.",
+      "Decidido a ganarme tu corazon, decidido a estar contigo por el resto de mis dias.",
+      "Eres la mujer mas linda y hermosa que he conocido.",
+      "La mas linda de todas, asi que no pienses en decirme que busque a alguien mas.",
+      "Alguien como tu no hay igual, y yo solo te quiero a ti.",
+      "Estoy completamente loco por ti.",
+      "Hare locura tras locura con tal de que me prestes algo de atencion.",
+      "Hare que me vuelvas a mirar con esos ojos que tanto me gustaban.",
+      "Hare que vuelvas a amarme..",
+      "Y yo me esforzare para ser perfecto.",
+      "Para volverme lo que tu siempre has querido y necesitado..",
+      "Me volvere el hombre de tu sueños cueste lo que cueste.",
+      "...",
+      "Gracias por haberme hecho el chico mas feliz del mundo en ese entonces.",
+      "Ahora, yo soy el que quiere hacerte feliz a ti.",
+      "Que te olvides de absolutamente todos los problemas.. y que seas tu misma conmigo como siempre hiciste.",
+      "Te amo, y esto no es un adios, solo es un...",
+      "Hasta pronto",
+      "(Click...)"
+      
+     
+    ];
+
+    let currentDialogueIndex = 0;
+    let displayedText = "";
+    let isTyping = false;
+    let charIndex = 0;
+    let typingTimer = null;
+
+    const textContainer = document.getElementById('text-container');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTypewriterSound(char) {
+      if (!char || char.trim() === '' || /[.,\/#!$%\^&\*;:{}=\-_`~()?"']/.test(char)) {
+        return;
+      }
+      try {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+      
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(100 + (Math.random() - 0.8) * 9, audioCtx.currentTime);
+
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.003);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      } catch (e) {
+        console.warn("Audio Context error", e);
+      }
+    }
+
+    function startDialogue() {
+      if (typingTimer) clearTimeout(typingTimer);
+      
+      const fullText = dialogues[currentDialogueIndex];
+      displayedText = "";
+      textContainer.textContent = "";
+      isTyping = true;
+      charIndex = 0;
+
+      function tick() {
+        if (charIndex < fullText.length) {
+          const nextChar = fullText[charIndex];
+          displayedText += nextChar;
+          textContainer.textContent = displayedText;
+          
+          playTypewriterSound(nextChar);
+          
+          charIndex++;
+
+          let delay = 50;
+          if (nextChar === ',' || nextChar === ';') {
+            delay = 180;
+          } else if (nextChar === '.' || nextChar === '!' || nextChar === '?' || nextChar === ')') {
+            delay = 250;
+          }
+
+          typingTimer = setTimeout(tick, delay);
+        } else {
+          isTyping = false;
+        }
+      }
+
+      tick();
+    }
+
+    function handleInteraction() {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (isTyping) {
+        if (typingTimer) clearTimeout(typingTimer);
+        textContainer.textContent = dialogues[currentDialogueIndex];
+        isTyping = false;
+        return;
+      }
+
+      
+      currentDialogueIndex = (currentDialogueIndex + 1) % dialogues.length;
+      startDialogue();
+    }
+
+   
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
+
+   
+    textContainer.textContent = "(Ring Ring...)";
+  </script>
+</body>
+</html>
